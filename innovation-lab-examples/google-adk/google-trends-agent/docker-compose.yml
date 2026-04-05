@@ -1,0 +1,20 @@
+services:
+  agent:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: google-trends-agent
+    restart: unless-stopped
+    ports:
+      - "8015:8015"
+    env_file:
+      - .env
+    environment:
+      - AGENT_PORT=8015
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/credentials.json
+    networks:
+      - agent-network
+
+networks:
+  agent-network:
+    driver: bridge

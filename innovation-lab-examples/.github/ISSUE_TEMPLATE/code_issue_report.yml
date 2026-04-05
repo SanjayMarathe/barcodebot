@@ -1,0 +1,36 @@
+name: Code issue report
+description: Report incorrect code logic, behavior, or output.
+title: "Code issue: "
+labels: ["code-issue"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Issue description
+      placeholder: What part of the code looks incorrect?
+    validations:
+      required: true
+
+  - type: input
+    id: affected_path
+    attributes:
+      label: Affected file path
+      placeholder: e.g. a2a-cart-store/store_executor.py
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected_vs_actual
+    attributes:
+      label: Expected vs actual behavior
+      placeholder: |
+        Expected:
+        Actual:
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed_fix
+    attributes:
+      label: Proposed fix (optional)
+      description: Share idea or patch direction if available.

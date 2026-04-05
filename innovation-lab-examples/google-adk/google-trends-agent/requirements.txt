@@ -1,0 +1,17 @@
+# Fetch.ai agent framework
+uagents==0.22.8
+uagents-core==0.4.4
+
+# Google Cloud / BigQuery (from original google-trends-agent ADK sample)
+google-cloud-bigquery>=3.35.0,<4.0.0
+google-auth>=2.17.3
+
+# ASI:One / OpenAI-compatible client
+openai>=1.0.0
+
+# Stripe payments
+stripe>=7.0.0
+
+# Utilities
+python-dotenv>=1.0.1
+pandas>=2.0.0

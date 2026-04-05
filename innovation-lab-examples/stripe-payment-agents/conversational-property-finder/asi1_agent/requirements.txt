@@ -1,0 +1,8 @@
+uagents
+uagents-core>=0.2.0
+python-dotenv
+requests
+openai
+stripe
+resend
+types-requests

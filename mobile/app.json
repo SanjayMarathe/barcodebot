@@ -13,9 +13,14 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "BarcodeBot uses the camera to record and analyze objects.",
+        "NSMicrophoneUsageDescription": "BarcodeBot uses the microphone when recording video."
+      }
     },
     "android": {
+      "permissions": ["android.permission.CAMERA", "android.permission.RECORD_AUDIO"],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"

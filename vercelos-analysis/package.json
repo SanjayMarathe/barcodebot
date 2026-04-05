@@ -1,0 +1,23 @@
+{
+  "name": "voice-vision",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "mobile": "npm run dev --workspace=apps/mobile",
+    "server": "npm run dev --workspace=apps/server",
+    "dev": "concurrently \"npm run server\" \"npm run mobile\"",
+    "build": "npm run build --workspaces"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  },
+  "overrides": {
+    "react-native-reanimated": "~4.1.1"
+  },
+  "dependencies": {
+    "expo-audio-stream": "^0.1.13"
+  }
+}

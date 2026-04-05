@@ -1,0 +1,51 @@
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.api
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite:///./diamond_hacks.db
+      - SCREENSHOTS_DIR=/app/screenshots
+      - FASTAPI_CALLBACK_URL=http://api:8000/internal/agent-event
+      - CORS_ORIGINS=http://localhost:3000
+    env_file:
+      - .env
+    volumes:
+      - ./diamond_hacks.db:/app/diamond_hacks.db
+      - ./screenshots:/app/screenshots
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  agents:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.agents
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      - FASTAPI_CALLBACK_URL=http://api:8000/internal/agent-event
+    env_file:
+      - .env
+    volumes:
+      - ./diamond_hacks.db:/app/diamond_hacks.db
+      - ./screenshots:/app/screenshots
+    network_mode: host  # agents need to communicate on localhost ports
+
+  web:
+    build:
+      context: apps/web
+      dockerfile: ../../infra/docker/Dockerfile.web
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    depends_on:
+      - api

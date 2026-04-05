@@ -1,0 +1,226 @@
+# Agent Contribution Guide
+
+This repository is open for community contributions.  
+Any user can submit a new agent example through a pull request.
+
+This guide explains how to add agents in a consistent, review-friendly format.
+
+## Getting Started
+
+1. Fork the repository and clone your fork.
+2. Create a feature branch from `main`.
+3. Keep changes focused (one feature/fix per PR).
+4. Use `./setup.sh <example-folder>` to quickly test any example locally.
+
+```bash
+git checkout -b feat/short-description
+```
+
+Star this repository before raising a PR (CLI):
+
+```bash
+gh repo star fetchai/innovation-lab-examples
+```
+
+## Who Can Add an Agent?
+
+- Anyone can contribute an agent example (community members, students, builders, and teams).
+- You do not need to be part of the core team to open a PR.
+- The PR author must star this repository before opening a PR.
+- All contributions are reviewed before merge.
+
+## How to Add a New Agent Example
+
+When adding a new agent, please follow this structure:
+
+1. Create a dedicated folder for the agent.
+2. Add source code and dependency files.
+3. Add a complete `README.md`.
+4. Add demo assets (image/GIF).
+5. Add `.env.example` if env vars are required.
+
+Recommended folder layout:
+
+```text
+<agent-folder>/
+  README.md
+  requirements.txt
+  .env.example
+  agent.py
+  assets/
+    demo.png
+```
+
+## Tagging and Categorization
+
+Every example should be tagged in its README with a difficulty level and category to help users navigate the repository.
+
+**Difficulty levels:**
+
+- **Beginner** — single agent, minimal setup, no external services
+- **Intermediate** — API integrations, payment protocols, multi-file agents
+- **Advanced** — multi-agent systems, Web3, complex orchestration
+
+**Categories** (use one or more):
+
+`Getting Started` · `LLM` · `A2A` · `MCP` · `Payments` · `RAG` · `Multi-Agent` · `Web3` · `Integration` · `Frontend` · `Tooling`
+
+Add these to the top of your example README:
+
+```markdown
+- **Category:** `LLM`, `Payments`
+- **Difficulty:** Intermediate
+```
+
+When you add a new example, also add it to the examples index table in the root [README.md](README.md).
+
+## Local Development Checks (CLI)
+
+Many examples are Python-based. Run these checks before opening a PR.
+
+Install `ruff` (if needed):
+
+```bash
+python -m pip install ruff
+```
+
+Lint:
+
+```bash
+ruff check .
+```
+
+Format:
+
+```bash
+ruff format .
+```
+
+Optional auto-fix:
+
+```bash
+ruff check . --fix
+```
+
+## `.env` and Secrets Policy
+
+- Never commit real secrets, API keys, private keys, or tokens.
+- If your example uses environment variables, include a `.env.example` file.
+- Document each variable in README with a short description.
+- Add `.env` to `.gitignore` in project folders where needed.
+
+Example:
+
+```env
+# .env.example
+OPENAI_API_KEY=your_api_key_here
+AGENTVERSE_API_KEY=your_agentverse_key_here
+```
+
+## README Quality Requirements
+
+Every new or updated example should have a clear README. At minimum include:
+
+- What the project does (2-4 lines).
+- Prerequisites and installation steps.
+- `.env` variable setup section.
+- How to run the project.
+- Expected output or behavior.
+- Troubleshooting notes (if relevant).
+- Agent profile link (if deployed/published).
+
+Use this ready-to-copy template:
+- `docs/AGENT_README_TEMPLATE.md`
+
+## Demo and Agent Profile Requirements
+
+To make examples easy to verify, please add:
+
+- A demo image or GIF (recommended: ASI demo screenshot) in the example README.
+- A link to the deployed or published agent profile (for example, Agentverse profile URL), when available.
+
+Recommended asset path:
+
+```text
+<example-folder>/assets/demo.png
+```
+
+Recommended README snippet:
+
+```markdown
+## Demo
+![ASI Demo](./assets/demo.png)
+
+## Agent Profile
+[View Agent Profile](https://agentverse.ai/)
+```
+
+## Pull Request Checklist
+
+- Keep PRs small and scoped to one improvement.
+- Add or update README for the agent.
+- Include setup or testing notes for reviewers.
+- Add `.env.example` if environment variables are required.
+- Include demo image/GIF and agent profile link when applicable.
+- Run `ruff check .` and `ruff format .` before submitting.
+- Add a changelog entry in `CHANGELOG.md` for non-doc changes.
+- Ensure all CI checks pass on `pull_request`:
+  - `stargazer-gate`
+  - `changelog-check`
+  - `lint`
+  - `format`
+  - `typecheck`
+  - `validate-architecture`
+  - `test`
+- Reference related issues when applicable.
+
+## How to Raise Issues
+
+- Use `ISSUES_GUIDE.md` before creating an issue.
+- Choose the matching issue template:
+  - Bug report
+  - Error report
+  - Wrong path report
+  - Code issue report
+  - Feature request
+- Add clear reproduction steps, affected path, and logs.
+
+PRs also use a default template:
+- `.github/pull_request_template.md`
+
+## Security Reporting
+
+- Do not open public issues for security vulnerabilities.
+- Follow `SECURITY.md` to report vulnerabilities responsibly.
+- Never include real secrets (keys/tokens/private credentials) in issues or PRs.
+
+## Merge Policy
+
+- Direct merges to `main` are not allowed.
+- Every PR must have at least one review from the Fetch.ai team before merge.
+- Community users can open PRs, but merge happens only after review approval.
+- Branch protection should require:
+  - Required pull request reviews: `1`
+  - Required status checks:
+    - `stargazer-gate`
+    - `changelog-check`
+    - `lint`
+    - `format`
+    - `typecheck`
+    - `validate-architecture`
+    - `test`
+
+## Docker Support
+
+If your example benefits from containerization, include a `Dockerfile` in the example folder. The repository also provides a root-level `Dockerfile` that can run any example:
+
+```bash
+docker build --build-arg EXAMPLE=your-example-folder -t your-example .
+docker run --env-file your-example-folder/.env your-example
+```
+
+## Useful Links
+
+- Innovation Lab docs: <https://innovationlab.fetch.ai/resources/docs/intro>
+- Agentverse: <https://agentverse.ai/>
+- ASI:One: <https://asi1.ai/>

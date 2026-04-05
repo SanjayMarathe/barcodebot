@@ -1,0 +1,9 @@
+services:
+  agent:
+    build:
+      context: .
+      args:
+        EXAMPLE: ${EXAMPLE:-fetch-hackathon-quickstarter}
+    env_file:
+      - ${EXAMPLE:-fetch-hackathon-quickstarter}/.env
+    restart: unless-stopped

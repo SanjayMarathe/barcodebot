@@ -1,0 +1,221 @@
+name: Pull Request CI
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  stargazer-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate PR author has starred this repository
+        env:
+          ACTOR: ${{ github.actor }}
+          REPO: ${{ github.repository }}
+          TOKEN: ${{ secrets.TOKEN }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import sys
+          import urllib.request
+
+          actor = os.environ["ACTOR"]
+          repo = os.environ["REPO"].lower()
+          token = os.environ.get("TOKEN", "")
+
+          headers = {
+              "Accept": "application/vnd.github+json",
+              "User-Agent": "stargazer-gate",
+          }
+          if token:
+              headers["Authorization"] = f"Bearer {token}"
+
+          has_starred = False
+          for page in range(1, 31):
+              url = f"https://api.github.com/users/{actor}/starred?per_page=100&page={page}"
+              request = urllib.request.Request(url, headers=headers)
+              with urllib.request.urlopen(request) as response:
+                  payload = json.loads(response.read().decode("utf-8"))
+
+              if not payload:
+                  break
+
+              if any(item.get("full_name", "").lower() == repo for item in payload):
+                  has_starred = True
+                  break
+
+          if has_starred:
+              print(f"Check passed: @{actor} has starred {repo}.")
+              sys.exit(0)
+
+          print(
+              f"Check failed: @{actor} must star {repo} before raising a PR "
+              "or their star must be publicly visible."
+          )
+          sys.exit(1)
+          PY
+
+  changelog-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Enforce changelog update for non-doc PRs
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.sha }}"
+          CHANGED_FILES="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")"
+
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "No changed files detected; skipping."
+            exit 0
+          fi
+
+          DOCS_ONLY=true
+          while IFS= read -r file; do
+            case "$file" in
+              *.md|docs/*|.github/ISSUE_TEMPLATE/*|.github/pull_request_template.md)
+                ;;
+              *)
+                DOCS_ONLY=false
+                break
+                ;;
+            esac
+          done <<< "$CHANGED_FILES"
+
+          if [ "$DOCS_ONLY" = true ]; then
+            echo "Docs-only PR detected; CHANGELOG.md update is not required."
+            exit 0
+          fi
+
+          if echo "$CHANGED_FILES" | grep -qx "CHANGELOG.md"; then
+            echo "CHANGELOG.md update detected."
+            exit 0
+          fi
+
+          echo "CHANGELOG.md must be updated for non-doc PRs."
+          exit 1
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install ruff
+        run: python -m pip install --upgrade pip ruff
+      - name: Run lint on changed Python files
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.sha }}"
+          CHANGED_PY="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | grep -E '\.py$' || true)"
+          if [ -z "$CHANGED_PY" ]; then
+            echo "No Python files changed; skipping lint."
+            exit 0
+          fi
+          echo "$CHANGED_PY" | tr '\n' '\0' | xargs -0 ruff check
+
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install ruff
+        run: python -m pip install --upgrade pip ruff
+      - name: Check formatting on changed Python files
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.sha }}"
+          CHANGED_PY="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | grep -E '\.py$' || true)"
+          if [ -z "$CHANGED_PY" ]; then
+            echo "No Python files changed; skipping format check."
+            exit 0
+          fi
+          echo "$CHANGED_PY" | tr '\n' '\0' | xargs -0 ruff format --check
+
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install mypy
+        run: python -m pip install --upgrade pip mypy
+      - name: Run typecheck on changed Python files
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.sha }}"
+          CHANGED_PY="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | grep -E '\.py$' || true)"
+          if [ -z "$CHANGED_PY" ]; then
+            echo "No Python files changed; skipping typecheck."
+            exit 0
+          fi
+          echo "$CHANGED_PY" | tr '\n' '\0' | xargs -0 mypy --ignore-missing-imports --follow-imports=silent
+
+  validate-architecture:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Validate repository architecture
+        shell: bash
+        run: |
+          set -euo pipefail
+          REQUIRED_FILES=("README.md" "CONTRIBUTING.md" "LICENSE")
+          for file in "${REQUIRED_FILES[@]}"; do
+            if [ ! -f "$file" ]; then
+              echo "Missing required repository file: $file"
+              exit 1
+            fi
+          done
+          echo "Architecture validation passed."
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install pytest
+        run: python -m pip install --upgrade pip pytest
+      - name: Run tests when present
+        shell: bash
+        run: |
+          set -euo pipefail
+          if find . -type f \( -name "test_*.py" -o -name "*_test.py" \) | grep -q .; then
+            pytest -q
+          else
+            echo "No test files found; skipping tests."
+          fi

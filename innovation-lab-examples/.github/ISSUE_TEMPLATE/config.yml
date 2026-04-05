@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Contribution and Issue Guide
+    url: https://github.com/fetchai/innovation-lab-examples/blob/main/ISSUES_GUIDE.md
+    about: Read the issue and contribution requirements before creating a new issue.

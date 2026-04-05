@@ -1,0 +1,42 @@
+version: "3.9"
+
+services:
+  expense-calculator-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: expense-calculator-agent:latest
+    container_name: expense-calculator-agent
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    environment:
+      - AGENT_PORT=8004
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - AGENTVERSE_URL=${AGENTVERSE_URL:-https://agentverse.ai}
+      - AGENT_MAILBOX_KEY=${AGENT_MAILBOX_KEY}
+      - AGENT_SEED=${AGENT_SEED:-receipt-calculator-seed}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY}
+
+    ports:
+      - "8004:8004"
+
+    volumes:
+      - ./.env:/app/.env:ro
+
+    networks:
+      - expense-agent-network
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8004/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  expense-agent-network:
+    driver: bridge

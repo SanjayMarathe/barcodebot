@@ -1,0 +1,18 @@
+# Core uAgents framework
+uagents>=0.18.0
+uagents-core>=0.4.0
+
+# Browser automation (Browser Use Cloud SDK v3)
+browser-use-sdk
+
+# HTTP client for FastAPI callbacks
+httpx>=0.26.0
+
+# Database (agents access SQLite directly, no SQLAlchemy needed)
+# sqlite3 is stdlib
+
+# Optional: Stripe treasury
+stripe>=7.0.0
+
+# Utilities
+python-dotenv>=1.0.0

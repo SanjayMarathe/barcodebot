@@ -1,0 +1,17 @@
+# FastAPI and server
+fastapi>=0.111.0
+uvicorn[standard]>=0.30.0
+sse-starlette>=1.8.0
+
+# Database
+sqlalchemy>=2.0.0
+aiosqlite>=0.20.0
+
+# HTTP client
+httpx>=0.26.0
+
+# Optional Stripe
+stripe>=7.0.0
+
+# Environment
+python-dotenv>=1.0.0

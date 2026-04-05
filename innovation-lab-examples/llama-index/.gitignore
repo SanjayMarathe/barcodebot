@@ -1,0 +1,23 @@
+# Environment
+.env
+.venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Agent runtime storage (auto-generated per agent address)
+*_data.json
+
+# IDE / tools
+.claude/
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp files from document downloads
+/tmp/rag_*

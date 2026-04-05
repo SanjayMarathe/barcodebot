@@ -1,0 +1,18 @@
+.env
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+
+# Google OAuth token files (contain user credentials — never commit these)
+google_user_tokens.json
+google_device_flows.json
+token.json
+credentials.json
+google_oauth_client.json
+
+# Agent runtime
+.uagents/
+agent.log
+sessions.json

@@ -1,0 +1,96 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install ruff
+        run: python -m pip install --upgrade pip ruff
+      - name: Run lint on changed Python files
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHANGED_PY="$(git diff --name-only HEAD~1 HEAD | grep -E '\.py$' || true)"
+          if [ -z "$CHANGED_PY" ]; then
+            echo "No Python files changed; skipping lint."
+            exit 0
+          fi
+          echo "$CHANGED_PY" | tr '\n' '\0' | xargs -0 ruff check
+
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install ruff
+        run: python -m pip install --upgrade pip ruff
+      - name: Check formatting on changed Python files
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHANGED_PY="$(git diff --name-only HEAD~1 HEAD | grep -E '\.py$' || true)"
+          if [ -z "$CHANGED_PY" ]; then
+            echo "No Python files changed; skipping format check."
+            exit 0
+          fi
+          echo "$CHANGED_PY" | tr '\n' '\0' | xargs -0 ruff format --check
+
+  validate-architecture:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Validate repository architecture
+        shell: bash
+        run: |
+          set -euo pipefail
+          REQUIRED_FILES=("README.md" "CONTRIBUTING.md" "LICENSE" "CHANGELOG.md" "SECURITY.md")
+          for file in "${REQUIRED_FILES[@]}"; do
+            if [ ! -f "$file" ]; then
+              echo "Missing required repository file: $file"
+              exit 1
+            fi
+          done
+          echo "Architecture validation passed."
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install pytest
+        run: python -m pip install --upgrade pip pytest
+      - name: Run tests when present
+        shell: bash
+        run: |
+          set -euo pipefail
+          if find . -type f \( -name "test_*.py" -o -name "*_test.py" \) | grep -q .; then
+            pytest -q
+          else
+            echo "No test files found; skipping tests."
+          fi

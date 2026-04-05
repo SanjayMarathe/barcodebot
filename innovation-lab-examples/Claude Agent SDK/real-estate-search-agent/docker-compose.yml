@@ -1,0 +1,18 @@
+services:
+  real-estate-agent:
+    build: .
+    container_name: real-estate-agent
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    volumes:
+      - agent_data:/root/.uagents
+
+volumes:
+  agent_data:
+    name: realestate_agent_data

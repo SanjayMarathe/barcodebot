@@ -1,0 +1,40 @@
+name: Error report
+description: Report runtime, import, dependency, or setup errors.
+title: "Error: "
+labels: ["error"]
+body:
+  - type: textarea
+    id: error_summary
+    attributes:
+      label: Error summary
+      placeholder: What error did you hit?
+    validations:
+      required: true
+
+  - type: textarea
+    id: command
+    attributes:
+      label: Command or action that triggered the error
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: traceback
+    attributes:
+      label: Full traceback / logs
+      render: shell
+    validations:
+      required: true
+
+  - type: input
+    id: affected_path
+    attributes:
+      label: Affected file or folder path
+      placeholder: e.g. frontend-integration/app/main.py
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: e.g. Ubuntu 24.04, Python 3.10

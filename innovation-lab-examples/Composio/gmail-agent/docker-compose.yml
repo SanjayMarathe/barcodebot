@@ -1,0 +1,18 @@
+services:
+  gmail-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8028:8028"   
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    networks:
+      - gmail-agent-network
+    restart: unless-stopped
+
+networks:
+  gmail-agent-network:
+    driver: bridge

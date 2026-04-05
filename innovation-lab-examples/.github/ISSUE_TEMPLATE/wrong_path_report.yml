@@ -1,0 +1,26 @@
+name: Wrong path report
+description: Report incorrect file/folder/import/docs paths.
+title: "Wrong path: "
+labels: ["documentation", "path"]
+body:
+  - type: input
+    id: wrong_path
+    attributes:
+      label: Wrong path
+      placeholder: e.g. docs/setup.md
+    validations:
+      required: true
+
+  - type: input
+    id: correct_path
+    attributes:
+      label: Suggested correct path
+      placeholder: e.g. docs/getting-started.md
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Where you found it
+      description: Share link, file, or command output.
+    validations:
+      required: true
