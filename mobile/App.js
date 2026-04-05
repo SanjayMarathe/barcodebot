@@ -491,7 +491,7 @@ export default function App() {
       <SafeAreaView style={s.root}>
         <View style={s.permScreen}>
           <Text style={s.permTitle}>Camera Access Required</Text>
-          <Text style={s.permSub}>BarcodeBot needs camera access to record and analyze objects.</Text>
+          <Text style={s.permSub}>Kaimon needs camera access to record and analyze objects.</Text>
           <TouchableOpacity style={s.permBtn} onPress={requestCamPerm}>
             <Text style={s.permBtnText}>Grant Camera Access</Text>
           </TouchableOpacity>
@@ -529,7 +529,7 @@ export default function App() {
           <View style={s.logoBox}>
             <Text style={s.logoIcon}>⬡</Text>
           </View>
-          <Text style={s.appName}>BarcodeBot</Text>
+          <Text style={s.appName}>Kaimon</Text>
           <View style={s.versionBadge}><Text style={s.versionText}>v1.0</Text></View>
         </View>
         <View style={s.topBarRight}>

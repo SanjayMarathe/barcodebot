@@ -15,8 +15,8 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSCameraUsageDescription": "BarcodeBot uses the camera to record and analyze objects.",
-        "NSMicrophoneUsageDescription": "BarcodeBot uses the microphone when recording video."
+        "NSCameraUsageDescription": "Kaimon uses the camera to record and analyze objects.",
+        "NSMicrophoneUsageDescription": "Kaimon uses the microphone when recording video."
       }
     },
     "android": {
