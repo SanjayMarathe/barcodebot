@@ -118,7 +118,7 @@ BUYER_ADDRS = [
     _addr(BUYER_C_SEED),
     _addr(BUYER_D_SEED),
     _addr(BUYER_E_SEED),
-]
+][:3]  # cap to 3 active buyers
 
 logger.info(f"Orchestrator address: {orchestrator.address}")
 logger.info(f"Search agent address: {SEARCH_ADDR}")
@@ -181,7 +181,7 @@ def _create_stripe_checkout(amount_cents: int, description: str) -> dict:
             line_items=[{
                 "price_data": {
                     "currency": "usd",
-                    "product_data": {"name": "BarcodeBot Shopping Run", "description": description},
+                    "product_data": {"name": "Kaimon Shopping Run", "description": description},
                     "unit_amount": amount_cents,
                 },
                 "quantity": 1,
@@ -511,7 +511,7 @@ async def _chat_thought(ctx: Context, state: RunState, text: str):
 
 
 async def _fetch_detected_objects() -> list[str]:
-    """Fetch currently detected objects from the BarcodeBot backend."""
+    """Fetch currently detected objects from the Kaimon backend."""
     try:
         async with httpx.AsyncClient(timeout=4.0) as client:
             r = await client.get(f"{FASTAPI_BASE_URL}/globe-state")

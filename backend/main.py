@@ -123,25 +123,29 @@ last_video_id: str | None = None
 
 # ── Globe state (shared between mobile scan and web poller) ───────────────────
 
-_OBJECTS_FILE = Path(__file__).parent / ".detected_objects.json"
+_STATE_FILE = Path(__file__).parent / ".detected_objects.json"
 
-def _load_saved_objects() -> list:
+def _load_saved_state() -> dict:
     try:
-        return json.loads(_OBJECTS_FILE.read_text())
+        data = json.loads(_STATE_FILE.read_text())
+        if isinstance(data, list):
+            return {"objects": data, "last_updated": None}
+        return data
     except Exception:
-        return []
+        return {"objects": [], "last_updated": None}
 
-def _save_objects(objects: list):
+def _save_state(objects: list, last_updated):
     try:
-        _OBJECTS_FILE.write_text(json.dumps(objects))
+        _STATE_FILE.write_text(json.dumps({"objects": objects, "last_updated": last_updated}))
     except Exception:
         pass
 
+_saved = _load_saved_state()
 _globe_state: dict = {
-    "objects": _load_saved_objects(),
+    "objects": _saved["objects"],
     "pins": [],
     "enriched_queries": {},
-    "last_updated": None,
+    "last_updated": _saved["last_updated"],
     "enriching": False,
 }
 
@@ -228,10 +232,11 @@ async def record_scan(req: RecordScanRequest) -> dict:
 
     # Update globe state so web app can poll it
     import time as _time
+    ts = _time.time()
     _globe_state["objects"] = objects
-    _globe_state["last_updated"] = _time.time()
+    _globe_state["last_updated"] = ts
     _globe_state["pins"] = []  # will be filled by background enrichment
-    _save_objects(objects)
+    _save_state(objects, ts)
 
     # Fire-and-forget WorldMonitor enrichment
     asyncio.create_task(_background_enrich(objects))
@@ -259,8 +264,9 @@ async def reset() -> dict:
     """Clear all cached video + detection state."""
     global last_video_id, _globe_state, _active_run_id
     last_video_id = None
+    _save_state([], None)
     _globe_state.update({
-        "objects": _load_saved_objects(), "pins": [], "enriched_queries": {},
+        "objects": [], "pins": [], "enriched_queries": {},
         "last_updated": None, "enriching": False,
     })
     _cart_state["items"] = []
@@ -453,7 +459,7 @@ async def globe_enrich(req: GlobeEnrichRequest) -> dict:
 async def stripe_success():
     return """<html><body style="font-family:-apple-system,sans-serif;text-align:center;padding:60px 24px;background:#000;color:#fff">
 <h2 style="color:#34d399">✅ Payment successful!</h2>
-<p style="color:#94a3b8">Return to BarcodeBot to complete your purchase.</p>
+<p style="color:#94a3b8">Return to Kaimon to complete your purchase.</p>
 </body></html>"""
 
 
@@ -461,7 +467,7 @@ async def stripe_success():
 async def stripe_cancel():
     return """<html><body style="font-family:-apple-system,sans-serif;text-align:center;padding:60px 24px;background:#000;color:#fff">
 <h2 style="color:#f87171">Payment cancelled</h2>
-<p style="color:#94a3b8">You can try again from BarcodeBot.</p>
+<p style="color:#94a3b8">You can try again from Kaimon.</p>
 </body></html>"""
 
 
@@ -483,7 +489,7 @@ async def create_checkout(req: CreateCheckoutRequest) -> dict:
             line_items=[{
                 "price_data": {
                     "currency": "usd",
-                    "product_data": {"name": "BarcodeBot Shopping Budget"},
+                    "product_data": {"name": "Kaimon Shopping Budget"},
                     "unit_amount": req.amount_cents,
                 },
                 "quantity": 1,

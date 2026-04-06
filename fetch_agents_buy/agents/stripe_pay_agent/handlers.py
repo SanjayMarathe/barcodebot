@@ -2,7 +2,7 @@ import asyncio
 from datetime import datetime
 
 import httpx
-from uagents import Context
+from uagents import Context, Model
 from uagents_core.contrib.protocols.chat import ChatMessage
 from uagents_core.contrib.protocols.payment import (
     CommitPayment,
@@ -12,12 +12,20 @@ from uagents_core.contrib.protocols.payment import (
     RequestPayment,
 )
 
+
+class LogPurchase(Model):
+    items: str
+    total_cents: int
+    transaction_id: str
+    user_address: str
+
 from config import STRIPE_AMOUNT_CENTS
 from state import clear_state, extract_text, make_chat
 from stripe_payments import create_embedded_checkout_session, verify_checkout_session_paid
 
-BACKEND_URL = "http://localhost:8000"
+BACKEND_URL = "http://localhost:8099"
 CALLBACK_URL = f"{BACKEND_URL}/internal/agent-event"
+SHEETS_AGENT_ADDRESS = "agent1qdk60qep56tzkdk8jf6sue5rkwwffx3946ld9w25eqwyufrnnmss63c0xsr"
 
 
 async def post_event(run_id: str, event_type: str, payload: dict):
@@ -41,15 +49,15 @@ async def _get_cart_total() -> tuple[int, str, str]:
             r = await client.get(f"{BACKEND_URL}/active-run-id")
             run_id = r.json().get("run_id", "")
             if not run_id:
-                return STRIPE_AMOUNT_CENTS, "BarcodeBot cart purchase", ""
+                return STRIPE_AMOUNT_CENTS, "Kaimon cart purchase", ""
             r2 = await client.get(f"{BACKEND_URL}/run-sessions?run_id={run_id}")
             sessions = r2.json().get("sessions", [])
     except Exception:
-        return STRIPE_AMOUNT_CENTS, "BarcodeBot cart purchase", ""
+        return STRIPE_AMOUNT_CENTS, "Kaimon cart purchase", ""
 
     items = [s for s in sessions if s.get("item_name")]
     if not items:
-        return STRIPE_AMOUNT_CENTS, "BarcodeBot cart purchase", run_id
+        return STRIPE_AMOUNT_CENTS, "Kaimon cart purchase", run_id
 
     total_cents = 0
     parts = []
@@ -111,15 +119,22 @@ async def on_commit(ctx: Context, sender: str, msg: CommitPayment):
         await ctx.send(sender, RejectPayment(reason="Stripe payment not completed yet."))
         return
 
-    _, _, run_id = await _get_cart_total()
+    total_cents, items_summary, run_id = await _get_cart_total()
     await post_event(run_id, "payment_complete", {
         "transaction_id": msg.transaction_id,
         "status": "Payment confirmed",
     })
 
     await ctx.send(sender, CompletePayment(transaction_id=msg.transaction_id))
-    await ctx.send(sender, make_chat("Payment confirmed! ✓ Your cart purchase is complete."))
+    await ctx.send(sender, make_chat("Payment confirmed! ✓ Logging your purchase to Google Sheets…"))
     clear_state(ctx, sender)
+
+    await ctx.send(SHEETS_AGENT_ADDRESS, LogPurchase(
+        items=items_summary,
+        total_cents=total_cents,
+        transaction_id=msg.transaction_id,
+        user_address=sender,
+    ))
 
 
 async def on_reject(ctx: Context, sender: str, msg: RejectPayment):

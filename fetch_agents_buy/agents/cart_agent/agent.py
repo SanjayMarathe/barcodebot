@@ -105,7 +105,7 @@ def _create_checkout(amount_cents: int, description: str, user_address: str, cha
             "price_data": {
                 "currency": "usd",
                 "product_data": {
-                    "name": "BarcodeBot Cart Purchase",
+                    "name": "Kaimon Cart Purchase",
                     "description": description,
                 },
                 "unit_amount": amount_cents,

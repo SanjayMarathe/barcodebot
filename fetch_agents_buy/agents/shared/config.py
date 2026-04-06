@@ -22,8 +22,8 @@ DATABASE_PATH = str(REPO_ROOT / "diamond_hacks.db")
 # -----------------------------------------------------------------------
 # FastAPI callback
 # -----------------------------------------------------------------------
-FASTAPI_CALLBACK_URL = os.getenv("FASTAPI_CALLBACK_URL", "http://localhost:8000/internal/agent-event")
-FASTAPI_BASE_URL = os.getenv("FASTAPI_BASE_URL", "http://localhost:8000")
+FASTAPI_CALLBACK_URL = os.getenv("FASTAPI_CALLBACK_URL", "http://localhost:8099/internal/agent-event")
+FASTAPI_BASE_URL = os.getenv("FASTAPI_BASE_URL", "http://localhost:8099")
 
 # -----------------------------------------------------------------------
 # Agent seeds (deterministic addresses)
